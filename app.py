@@ -284,9 +284,16 @@ def predict():
             if col in input_aligned.columns:
                 input_aligned[col] = input_encoded[col].iloc[0]
         
-        # Preencher a coluna IDADE (que não é one-hot encoded)
-        if 'IDADE' in input_aligned.columns:
-            input_aligned['IDADE'] = input_df['IDADE'].iloc[0]
+# --- CORREÇÃO: Escalar a feature IDADE ---
+# Média e Desvio Padrão do dataset de treinamento (df_final_predict.csv)
+# Média: 35.63, Desvio Padrão: 19.34 (Valores obtidos na fase de retreinamento)
+IDADE_MEAN = 35.63
+IDADE_STD = 19.34
+
+if 'IDADE' in input_aligned.columns:
+    idade_nao_escalada = input_df['IDADE'].iloc[0]
+    idade_escalada = (idade_nao_escalada - IDADE_MEAN) / IDADE_STD
+    input_aligned['IDADE'] = idade_escalada
         
         # 4. Fazer a predição
         prediction_proba = model.predict_proba(input_aligned)[:, 1]
