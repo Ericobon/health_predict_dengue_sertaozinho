@@ -2,7 +2,7 @@
 
 ## 🎯 Objetivo
 
-Desenvolver e comparar modelos de Machine Learning para predizer a probabilidade de hospitalização de pacientes com dengue, otimizados para **maximizar Recall** (detectar casos graves).
+Desenvolver modelo de Machine Learning (Regressão Logística) para predizer a probabilidade de hospitalização de pacientes com dengue, otimizado com **Optuna** para maximizar **Recall** (detectar casos graves).
 
 ## 🏥 Contexto Clínico
 
@@ -23,44 +23,53 @@ Em saúde pública, é **crítico** detectar pacientes que precisam de hospitali
 - **Região**: Sertãozinho, SP e região
 - **Desbalanceamento**: ~1.17% de hospitalizações (classe minoritária)
 
-### Features Principais
+### Features Selecionadas (14)
+
+Após processo rigoroso de seleção (Feature Importance + Correlação + Chi-Square), foram selecionadas:
+
+#### Temporais (Sazonalidade)
+- **DIAS_SINTOMA_NOTIFIC_TEMP**: Tempo entre sintomas e notificação (engineered)
+- **TRIMESTRE**: Trimestre do ano
+- **MES**: Mês da notificação
+- **DIAS_SINTOMA_NOTIFIC**: Dias entre sintomas e notificação
+- **NU_ANO**: Ano da notificação
+- **ANO**: Ano (categorizado)
+
+#### Clínicas
+- **SEVERITY_SCORE**: Score de severidade (engineered)
+- **QTD_IGNORADOS**: Quantidade de campos ignorados (proxy de completude)
 
 #### Demográficas
-- Idade, Sexo, Raça
-- Município, Estado
-
-#### Clínicas (5 sintomas principais OMS)
-- ✅ **FEBRE**: Febre alta (>38.5°C)
-- ✅ **MIALGIA**: Dor muscular intensa
-- ✅ **CEFALEIA**: Dor de cabeça (retro-orbital)
-- ✅ **VOMITO**: Vômito persistente
-- ✅ **EXANTEMA**: Erupções cutâneas
-
-#### Sinais de Alarme
-- Petéquias, sangramento
-- Dor abdominal intensa
+- **IDADE**: Idade do paciente
 
 #### Comorbidades
-- Diabetes, doenças hematológicas, hepáticas, renais
+- **TEM_COMORBIDADE**: Flag binária (presença de comorbidade)
+- **COMORBIDADE_SCORE**: Score de comorbidades (engineered)
+- **HEPATOPAT_BIN**: Hepatopatia (Sim/Não)
+- **DIABETES_BIN**: Diabetes (Sim/Não)
+- **RENAL_BIN**: Doença renal (Sim/Não)
 
 #### Target
 - **HOSPITALIZ**: SIM/NÃO (variável a ser prevista)
 
 ---
 
-## 🤖 Modelos Avaliados
+## 🤖 Modelo Desenvolvido
 
-O projeto compara **4 algoritmos** de ML:
+**Regressão Logística** otimizada com **Optuna**:
 
-1. **Regressão Logística** - Baseline interpretável
-2. **Random Forest** - Ensemble de árvores
-3. **XGBoost** - Gradient Boosting otimizado
-4. **CatBoost** - Gradient Boosting com categorical features
+### Hiperparâmetros Otimizados
+- **C**: 0.00278 (regularização forte)
+- **penalty**: L1 (LASSO - seleção de features)
+- **solver**: saga (suporta L1)
+- **max_iter**: 2000
+- **class_weight**: None (balanceamento via SMOTE)
 
-Todos configurados com:
-- **Class Weight Balancing** ou **SMOTE** para desbalanceamento
-- **Otimização para Recall** (class_weight='balanced')
-- **Threshold ajustável** (padrão 0.5 → otimizado para Recall ≥ 0.85)
+### Otimização Optuna
+- **50 trials** de busca de hiperparâmetros
+- **5-fold Cross-Validation** estratificado
+- **Objetivo**: Maximizar Recall (Sensitivity)
+- **Balanceamento**: SMOTE no conjunto de treino
 
 ---
 
@@ -69,78 +78,101 @@ Todos configurados com:
 ```
 pi4v10/
 ├── df_dengue_tratado.csv              # Dataset original
-├── dengue_prediction_advanced.ipynb   # Notebook principal (RECOMENDADO)
-├── dengue_prediction_analysis.ipynb   # Notebook básico (apenas Logistic Regression)
-├── requirements.txt                    # Dependências Python
+├── modelo_dengue_final_optuna.ipynb   # 📓 Notebook principal (EXECUTAR ESTE)
+├── treinar_modelo_final.py            # Script Python alternativo
+├── requirements.txt                   # Dependências Python
 ├── README_DENGUE_ML.md                # Este arquivo
 │
-├── .claude/                            # Sistema de orquestração
+├── setup_environment.sh               # 🛠️  Script de setup automático
+├── activate.sh                        # Ativar ambiente virtual
+├── start_jupyter.sh                   # Iniciar Jupyter
+│
+├── .claude/                           # Sistema de orquestração multi-agent
 │   ├── config.json
 │   ├── prompts/
 │   │   ├── orchestrator.md
-│   │   ├── healthcare_ml_specialist.md  # Especialista em ML médico
+│   │   ├── healthcare_ml_specialist.md
 │   │   ├── data_engineer.md
+│   │   ├── ml_engineer.md
 │   │   └── ...
 │   └── tasks/
 │
+├── config_modelo.json                 # Configuração do modelo
+├── features_selecionadas.txt          # Lista de 14 features
+│
 └── outputs/ (gerados após execução)
-    ├── best_model_*.pkl               # Modelo vencedor
-    ├── scaler_dengue.pkl              # Normalizador
-    ├── feature_columns.txt            # Lista de features
-    ├── best_model_config.json         # Configuração e métricas
-    ├── all_models_metrics.csv         # Comparação de todos os modelos
+    ├── modelo_reglog_otimizado.pkl    # 🤖 Modelo final
+    ├── scaler_final.pkl               # Normalizador
+    ├── optuna_study_logreg.pkl        # Estudo Optuna
+    ├── config_modelo.json             # Métricas e configuração
     │
     └── visualizations/
-        ├── model_comparison_metrics.png
-        ├── confusion_matrices_comparison.png
-        ├── roc_curves_comparison.png
-        ├── pr_curves_comparison.png
-        ├── shap_summary_plot.png
-        ├── shap_feature_importance.png
-        └── shap_waterfall_example.png
+        ├── viz_shap_importance_bar.png
+        ├── viz_confusion_matrix.png
+        ├── viz_roc_curve.png
+        ├── viz_pr_curve.png
+        └── viz_probability_distribution.png
 ```
 
 ---
 
 ## 🚀 Como Executar
 
-### 1. Instalação de Dependências
+### Método 1: Setup Automático (Recomendado)
 
 ```bash
 cd /home/ericobon/insightesfera/PORTFOLIO_ACADEMICO/pi4v10
 
-# Criar ambiente virtual (recomendado)
+# Executar setup completo (cria venv, instala deps, inicia Jupyter)
+bash setup_environment.sh
+
+# Ou manualmente:
+bash activate.sh          # Ativar ambiente
+bash start_jupyter.sh     # Iniciar Jupyter
+```
+
+### Método 2: Manual
+
+```bash
+# Criar ambiente virtual
 python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
+source venv/bin/activate
 
 # Instalar dependências
 pip install -r requirements.txt
+
+# Abrir notebook
+jupyter notebook modelo_dengue_final_optuna.ipynb
 ```
 
-### 2. Executar Análise Completa
+### Método 3: Script Python
 
 ```bash
-# Abrir Jupyter Notebook
-jupyter notebook dengue_prediction_advanced.ipynb
+# Executar treinamento completo via script
+python treinar_modelo_final.py
 ```
 
-**Ou via linha de comando:**
+### ⚠️ IMPORTANTE: Ordem de Execução
 
-```bash
-# Executar todas as células
-jupyter nbconvert --to notebook --execute dengue_prediction_advanced.ipynb
-```
+O notebook tem **células com dependências**. Execute em ordem:
+
+1. **Células 0-42**: Pré-processamento + Otimização Optuna
+2. **Célula 43**: ⭐ Treinamento Final (cria `modelo_otimizado`)
+3. **Célula 44**: ⭐ Modelos de Comparação (cria `predictions`, `probabilities`)
+4. **Células 28, 36-39**: Visualizações (SHAP, ROC, PR, etc)
+
+💡 **Dica**: Use `Cell → Run All` para garantir execução correta!
 
 ### 3. Explorar Resultados
 
 Após a execução, os seguintes arquivos serão gerados:
 
-- ✅ **best_model_*.pkl**: Modelo treinado (usar para predições)
-- ✅ **best_model_config.json**: Métricas e configuração
-- ✅ **all_models_metrics.csv**: Comparação de todos os modelos
-- ✅ **Visualizações PNG**: Gráficos de avaliação
+- ✅ **modelo_reglog_otimizado.pkl**: Modelo final treinado
+- ✅ **scaler_final.pkl**: Normalizador (StandardScaler)
+- ✅ **config_modelo.json**: Métricas e hiperparâmetros
+- ✅ **features_selecionadas.txt**: Lista de 14 features
+- ✅ **optuna_study_logreg.pkl**: Estudo de otimização
+- ✅ **Visualizações PNG**: SHAP, ROC, PR, Confusion Matrix
 
 ---
 
@@ -154,11 +186,11 @@ Após a execução, os seguintes arquivos serão gerados:
 - Correlações
 
 ### 2. Feature Engineering
-- **SINTOMAS_SCORE**: Soma dos 5 sintomas principais
+- **SEVERITY_SCORE**: Score de severidade clínica
 - **COMORBIDADE_SCORE**: Soma de comorbidades
 - **TEM_COMORBIDADE**: Flag binária
-- **DIAS_SINTOMA_NOTIFIC**: Tempo entre sintomas e notificação
-- **FAIXA_ETARIA**: Categorização de idade
+- **DIAS_SINTOMA_NOTIFIC_TEMP**: Tempo entre sintomas e notificação (temporal)
+- **QTD_IGNORADOS**: Quantidade de campos ignorados
 
 ### 3. Preparação dos Dados
 - Tratamento de valores "IGNORADO" → binário
@@ -167,112 +199,174 @@ Após a execução, os seguintes arquivos serão gerados:
 - Split estratificado 80/20
 - **Balanceamento com SMOTE**
 
-### 4. Modelagem
-- Treinamento de 4 modelos
-- Cross-validation estratificada (5-fold)
-- Otimização de hiperparâmetros
+### 4. Seleção de Features
+- **Critérios combinados**:
+  1. Feature Importance (Random Forest)
+  2. Correlação com target
+  3. Chi-Square (significância estatística)
+- **Redução**: ~60 features → 14 features selecionadas
 
-### 5. Avaliação Clínica
+### 5. Modelagem
+- Regressão Logística (L1 regularization)
+- **Optuna**: 50 trials, 5-fold CV
+- Objetivo: Maximizar Recall
+
+### 6. Avaliação Clínica
 - Métricas: Sensitivity, Specificity, PPV, NPV, F1, AUC
 - Matriz de confusão (análise de FN e FP)
 - Curvas ROC e Precision-Recall
-- **Likelihood Ratios** (LR+ e LR-)
+- Análise de erros (Falsos Negativos/Positivos)
 
-### 6. Interpretabilidade
-- **SHAP values** (global e individual)
-- Feature importance
-- Waterfall plots (explicação por paciente)
+### 7. Interpretabilidade
+- **SHAP values** (global feature importance)
+- Análise de features mais importantes
+- Visualizações de importância
 
-### 7. Threshold Clínico
-- Ajuste de threshold para Recall ≥ 0.85
-- Trade-off Precision vs Recall
+### 8. Comparação com Modelos Baseline
+- Random Forest (sem tunagem)
+- XGBoost (sem tunagem)
+- CatBoost (sem tunagem)
 
 ---
 
-## 🎯 Métricas de Sucesso
+## 🎯 Resultados Obtidos
 
-### Critérios de Aprovação Clínica
+### Métricas do Modelo Final
 
-✅ **Recall (Sensitivity) ≥ 0.85**  
-   - Detecta pelo menos 85% dos casos de hospitalização
+| Métrica | Valor | Interpretação |
+|---------|-------|---------------|
+| **Sensitivity (Recall)** | 0.4364 | 43.64% dos casos graves detectados |
+| **Specificity** | 0.7402 | 74.02% dos não-casos identificados |
+| **PPV (Precision)** | 0.0245 | 2.45% dos alertas são verdadeiros |
+| **NPV** | 0.9887 | 98.87% de confiança em negativos ✅ |
+| **F1-Score** | 0.0464 | Score F1 baixo |
+| **ROC-AUC** | 0.6295 | Capacidade discriminativa moderada |
 
-✅ **NPV ≥ 0.95**  
-   - 95% de confiança em resultados negativos
+### Análise de Erros
 
-✅ **FN minimizados**  
-   - Poucos pacientes graves não detectados
+- **Falsos Negativos (FN)**: 31 casos (pacientes graves NÃO detectados)
+- **Falsos Positivos (FP)**: 955 casos (alertas desnecessários)
 
-✅ **Interpretabilidade**  
-   - Médicos entendem as decisões do modelo
+### ⚠️ Observações Importantes
+
+1. **Recall abaixo do esperado** (43.6% vs meta de 85%)
+   - Modelo conservador, detecta menos da metade dos casos graves
+
+2. **NPV excelente** (98.87%)
+   - Quando o modelo diz "não hospitalizar", tem alta confiança
+
+3. **PPV muito baixo** (2.45%)
+   - Para cada 100 alertas, apenas 2-3 são verdadeiros
+
+4. **Trade-off crítico**:
+   - Alta taxa de FN = risco clínico (pacientes graves não detectados)
+   - Alta taxa de FP = sobrecarga do sistema de saúde
+
+### 💡 Interpretação Clínica
+
+O modelo atual **não atinge os critérios clínicos mínimos** (Recall ≥ 0.85). Possíveis causas:
+
+- Dataset altamente desbalanceado (1.17% de hospitalizações)
+- Features selecionadas podem não capturar sinais de alarme críticos
+- Regularização L1 muito forte (C=0.0028) → modelo conservador
+- Ausência dos 5 sintomas principais OMS como features diretas
 
 ---
 
 ## 🔍 Interpretação de Resultados
 
-### Exemplo de Output Esperado
+### Output Real do Modelo
 
 ```
-🏆 MODELO VENCEDOR: XGBoost
+🏆 MODELO: Regressão Logística (Optuna)
 
 📊 MÉTRICAS:
-   - Sensitivity (Recall): 0.8734 ⭐ (87.34% dos casos detectados)
-   - Specificity:          0.9245 (92.45% dos não-casos identificados)
-   - PPV (Precision):      0.3421 (34.21% dos alertas são verdadeiros)
-   - NPV:                  0.9912 (99.12% de confiança em negativos)
-   - ROC-AUC:              0.9456
+   - Sensitivity (Recall): 0.4364 ⚠️  (43.64% dos casos detectados)
+   - Specificity:          0.7402 (74.02% dos não-casos identificados)
+   - PPV (Precision):      0.0245 (2.45% dos alertas são verdadeiros)
+   - NPV:                  0.9887 ✅ (98.87% de confiança em negativos)
+   - ROC-AUC:              0.6295
 
 ⚠️ ANÁLISE DE ERROS:
-   - Falsos Negativos: 23 pacientes (12.7% dos positivos reais)
-   - Falsos Positivos: 542 alertas desnecessários
+   - Falsos Negativos: 31 pacientes (56.36% dos positivos reais) 🚨
+   - Falsos Positivos: 955 alertas desnecessários
 
 💡 INTERPRETAÇÃO:
-   - O modelo captura 87% dos casos graves
-   - 13% dos casos graves não são detectados (FN)
-   - Para cada 3 alertas, 1 é verdadeiro (PPV=34%)
-   - Quando o modelo diz "não hospitalizar", tem 99% de chance de estar certo (NPV)
+   - O modelo captura apenas 44% dos casos graves 🚨
+   - 56% dos casos graves NÃO são detectados (FN alto)
+   - Para cada 100 alertas, apenas 2-3 são verdadeiros (PPV muito baixo)
+   - Quando o modelo diz "não hospitalizar", tem 98.9% de confiança (NPV ✅)
 ```
 
-### Trade-off Clínico
+### Trade-off Atual
 
-- **Alto Recall**: Detectamos a maioria dos casos graves ✅
-- **Precision moderada**: Muitos alarmes falsos, mas **aceitável** em saúde pública
-- **NPV alto**: Podemos confiar nos resultados negativos ✅
-
----
-
-## 🏥 Features Mais Importantes (Esperado)
-
-Com base em literatura médica, esperamos que as features mais importantes sejam:
-
-1. **VOMITO** - Vômito persistente (sinal de alarme)
-2. **SINTOMAS_SCORE** - Quantidade de sintomas
-3. **IDADE** - Idosos e crianças têm mais risco
-4. **COMORBIDADE_SCORE** - Doenças pré-existentes
-5. **PETEQUIA** - Sangramento (sinal de alarme crítico)
+- ❌ **Recall muito baixo**: Menos da metade dos casos graves são detectados
+- ❌ **PPV crítico**: 97.5% dos alertas são falsos
+- ✅ **NPV excelente**: Alta confiança em resultados negativos
+- ⚠️  **Risco clínico**: 31 pacientes graves não detectados
 
 ---
 
-## 📈 Próximos Passos
+## 🏥 Features Mais Importantes (SHAP Analysis)
 
-### 1. Dashboard Flask/Streamlit
-- Interface web para predições
-- Visualizações interativas
-- Upload de novos casos
+Baseado em análise SHAP, as features mais importantes são:
 
-### 2. API REST (FastAPI)
-- Endpoint `/predict` para predições em tempo real
-- Integração com sistemas de saúde
-- Latência < 50ms
+1. **DIAS_SINTOMA_NOTIFIC_TEMP** - Tempo entre sintomas e notificação (temporal)
+2. **TRIMESTRE** - Trimestre do ano (sazonalidade)
+3. **MES** - Mês da notificação
+4. **DIAS_SINTOMA_NOTIFIC** - Dias entre sintomas e notificação
+5. **TEM_COMORBIDADE** - Presença de comorbidade
+6. **NU_ANO** - Ano da notificação
+7. **QTD_IGNORADOS** - Quantidade de campos ignorados
+8. **SEVERITY_SCORE** - Score de severidade
+9. **IDADE** - Idade do paciente
+10. **COMORBIDADE_SCORE** - Score de comorbidades
 
-### 3. Deployment
-- Docker container
-- Cloud deployment (GCP/AWS)
-- Monitoring e logging
+### 💡 Insights
 
-### 4. Retraining
-- Feedback loop com médicos
-- Retraining mensal ou quando drift > 10%
-- Validação temporal (dados futuros)
+- **Predominância temporal**: 6 das 10 features mais importantes são temporais
+- **Comorbidades importantes**: TEM_COMORBIDADE e COMORBIDADE_SCORE aparecem
+- **Ausência de sintomas diretos**: FEBRE, VOMITO, MIALGIA não foram selecionadas
+- **QTD_IGNORADOS**: Proxy de completude dos dados é relevante
+
+---
+
+## 📈 Próximos Passos e Melhorias
+
+### 🔧 Melhorias Prioritárias no Modelo
+
+1. **Re-incluir sintomas clínicos OMS**
+   - FEBRE, VOMITO, MIALGIA, CEFALEIA, EXANTEMA
+   - Sinais de alarme: PETEQUIA, DOR_ABD
+
+2. **Ajustar threshold de predição**
+   - Reduzir de 0.5 para 0.3-0.4 → aumentar Recall
+
+3. **Testar class_weight='balanced'**
+   - Combinar SMOTE + class_weight
+
+4. **Explorar outros modelos**
+   - XGBoost otimizado (melhor para dados desbalanceados)
+   - Ensemble (Logistic + XGBoost + Random Forest)
+
+5. **Feature engineering adicional**
+   - Interações (IDADE × COMORBIDADE)
+   - Sintomas combinados (VOMITO + PETEQUIA)
+
+### 🚀 Deployment (Após Atingir Recall ≥ 0.85)
+
+1. **Dashboard Streamlit**
+   - Interface para médicos
+   - Upload de casos
+   - Explicabilidade SHAP
+
+2. **API REST (FastAPI)**
+   - Endpoint `/predict`
+   - Integração com sistemas de saúde
+
+3. **Monitoramento**
+   - Drift detection
+   - Retraining automático
 
 ---
 
@@ -280,10 +374,13 @@ Com base em literatura médica, esperamos que as features mais importantes sejam
 
 ### Limitações
 
-1. **Dados históricos**: Modelo treinado em dados de 2013-2025
-2. **Região específica**: Sertãozinho, SP
-3. **Desbalanceamento**: Apenas 1.17% de hospitalizações
-4. **Valores ignorados**: Muitos dados clínicos "IGNORADO"
+1. **Recall insuficiente** (43.6% << 85%): Modelo não detecta maioria dos casos graves
+2. **Dados históricos**: Modelo treinado em dados de 2013-2025
+3. **Região específica**: Sertãozinho, SP
+4. **Desbalanceamento extremo**: Apenas 1.17% de hospitalizações
+5. **Valores ignorados**: Muitos dados clínicos "IGNORADO"
+6. **Features temporais dominantes**: Sintomas clínicos não foram selecionados
+7. **Regularização muito forte**: C=0.0028 → modelo conservador demais
 
 ### Considerações Éticas
 
@@ -330,5 +427,30 @@ Para dúvidas ou sugestões:
 - 📖 Docs: [Link para documentação]
 
 ---
+
+## 🎓 Aprendizados
+
+### O que Funcionou ✅
+- Pipeline completo de ML implementado
+- Otimização automática com Optuna
+- Seleção rigorosa de features (60 → 14)
+- NPV excelente (98.87%)
+- Código modular e reproduzível
+
+### O que Precisa Melhorar ⚠️
+- Recall crítico (43.6% vs meta de 85%)
+- Sintomas clínicos OMS não foram selecionados
+- Regularização L1 muito forte
+- Threshold de classificação fixo (0.5)
+
+### Lições Aprendidas 💡
+1. **Dados desbalanceados são difíceis**: 1.17% de positivos é extremo
+2. **Métricas clínicas ≠ Métricas de ML**: Accuracy não é suficiente em saúde
+3. **Feature engineering importa**: Features temporais dominaram
+4. **Validação médica essencial**: Modelo precisa validação com especialistas
+
+---
+
+**⚠️  Modelo em desenvolvimento. NÃO usar em produção sem validação clínica!**
 
 **Em saúde, Recall > tudo. É melhor errar por excesso de cuidado!** 🏥
