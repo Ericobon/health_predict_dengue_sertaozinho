@@ -15,7 +15,7 @@ import os
 app = Flask(__name__)
 
 # --- Variáveis Globais ---
-MODEL_PATH = "modelo_reglog_pi4_retrained.pkl"
+MODEL_PATH = "models/modelo_reglog_otimizado.pkl"
 INPUT_FEATURES = ['FEBRE', 'MIALGIA', 'CEFALEIA', 'VOMITO', 'EXANTEMA']
 
 # --- Carregamento de Dados ---
@@ -23,7 +23,7 @@ INPUT_FEATURES = ['FEBRE', 'MIALGIA', 'CEFALEIA', 'VOMITO', 'EXANTEMA']
 # 1. Dataset de Sertãozinho (para estatísticas e visualizações)
 print("Carregando dataset de Sertãozinho para estatísticas...")
 try:
-    df_stats = pd.read_csv("df_dengue_tratado.csv")
+    df_stats = pd.read_csv("data/df_dengue_tratado.csv")
     df_stats["DT_NOTIFIC"] = pd.to_datetime(df_stats["DT_NOTIFIC"])
     df_stats["DT_SIN_PRI"] = pd.to_datetime(df_stats["DT_SIN_PRI"])
     df_stats["NU_ANO"] = df_stats["DT_NOTIFIC"].dt.year
