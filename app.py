@@ -268,20 +268,21 @@ def predict():
         input_data = {
             "IDADE": [int(data.get("idade", 30))],
             "CS_SEXO": [data.get("sexo", "F")],
-            "FEBRE": [data.get("febre", "NAO")],
-            "VOMITO": [data.get("vomito", "NAO")],
-            "MIALGIA": [data.get("mialgia", "NAO")],
-            "CEFALEIA": [data.get("cefaleia", "NAO")],
-            "EXANTEMA": [data.get("exantema", "NAO")]
+            "FEBRE": [data.get("febre", "NÃO")],
+            "VOMITO": [data.get("vomito", "NÃO")],
+            "MIALGIA": [data.get("mialgia", "NÃO")],
+            "CEFALEIA": [data.get("cefaleia", "NÃO")],
+            "EXANTEMA": [data.get("exantema", "NÃO")]
         }
         input_df = pd.DataFrame(input_data)
         
         # 2. Aplicar one-hot encoding APENAS nas colunas categóricas de input
+        # IMPORTANTE: usar drop_first=False para manter todas as categorias
         input_encoded = pd.get_dummies(input_df, columns=CATEGORICAL_COLS, drop_first=False)
         
         # 3. Alinhar as colunas com as features exatas do modelo
         # Criar um DataFrame com todas as features esperadas, preenchidas com 0
-        input_aligned = pd.DataFrame(0, index=[0], columns=model_features)
+        input_aligned = pd.DataFrame(0.0, index=[0], columns=model_features)
         
         # Preencher as colunas que vieram do input_encoded
         for col in input_encoded.columns:
@@ -295,13 +296,14 @@ def predict():
             input_aligned['IDADE'] = idade_escalada
         
         # 5. Fazer a predição
-        prediction_proba = model.predict_proba(input_aligned)[:, 1]
+        prediction_proba = model.predict_proba(input_aligned)
+        prob_hospitalizacao = prediction_proba[0][1]  # Probabilidade da classe 1 (SIM)
         
-        return jsonify({"probabilidade_hospitalizacao": round(prediction_proba[0] * 100, 2)})
+        return jsonify({"probabilidade_hospitalizacao": round(prob_hospitalizacao * 100, 2)})
     
     except Exception as e:
         # Retornar o erro para diagnóstico
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro na predição: {str(e)}"}), 500
 
 
 if __name__ == "__main__":
