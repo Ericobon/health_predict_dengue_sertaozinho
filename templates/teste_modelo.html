@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Dengue Sertãozinho{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <h1 class="page-title">Dashboard Interativo - Predição de Hospitalização</h1>
+
+    <div class="dashboard-grid">
+        <!-- Formulário de Teste -->
+        <section class="dashboard-form">
+            <div class="section-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <h2>Insira os Sintomas do Paciente</h2>
+            </div>
+
+            <form id="dashboard-form">
+                <div class="form-group-dashboard">
+                    <label>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        Febre
+                    </label>
+                    <div class="toggle-group">
+                        <input type="radio" id="febre-sim" name="febre" value="Sim" required>
+                        <label for="febre-sim" class="toggle-option">Sim</label>
+
+                        <input type="radio" id="febre-nao" name="febre" value="Não">
+                        <label for="febre-nao" class="toggle-option">Não</label>
+                    </div>
+                </div>
+
+                <div class="form-group-dashboard">
+                    <label>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        Vômito
+                    </label>
+                    <div class="toggle-group">
+                        <input type="radio" id="vomito-sim" name="vomito" value="Sim" required>
+                        <label for="vomito-sim" class="toggle-option">Sim</label>
+
+                        <input type="radio" id="vomito-nao" name="vomito" value="Não">
+                        <label for="vomito-nao" class="toggle-option">Não</label>
+                    </div>
+                </div>
+
+                <div class="form-group-dashboard">
+                    <label>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                        Mialgia (Dor Muscular)
+                    </label>
+                    <div class="toggle-group">
+                        <input type="radio" id="mialgia-sim" name="mialgia" value="Sim" required>
+                        <label for="mialgia-sim" class="toggle-option">Sim</label>
+
+                        <input type="radio" id="mialgia-nao" name="mialgia" value="Não">
+                        <label for="mialgia-nao" class="toggle-option">Não</label>
+                    </div>
+                </div>
+
+                <div class="form-group-dashboard">
+                    <label>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Cefaleia (Dor de Cabeça)
+                    </label>
+                    <div class="toggle-group">
+                        <input type="radio" id="cefaleia-sim" name="cefaleia" value="Sim" required>
+                        <label for="cefaleia-sim" class="toggle-option">Sim</label>
+
+                        <input type="radio" id="cefaleia-nao" name="cefaleia" value="Não">
+                        <label for="cefaleia-nao" class="toggle-option">Não</label>
+                    </div>
+                </div>
+
+                <div class="form-group-dashboard">
+                    <label>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+                        </svg>
+                        Exantema (Manchas na Pele)
+                    </label>
+                    <div class="toggle-group">
+                        <input type="radio" id="exantema-sim" name="exantema" value="Sim" required>
+                        <label for="exantema-sim" class="toggle-option">Sim</label>
+
+                        <input type="radio" id="exantema-nao" name="exantema" value="Não">
+                        <label for="exantema-nao" class="toggle-option">Não</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full btn-large">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    CALCULAR PROBABILIDADE
+                </button>
+            </form>
+        </section>
+
+        <!-- Resultado -->
+        <section class="dashboard-result">
+            <div id="resultado-placeholder" class="placeholder-result">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <h3>Aguardando Dados</h3>
+                <p>Preencha o formulário ao lado para ver a predição do modelo</p>
+            </div>
+
+            <div id="resultado-dashboard" class="resultado-dashboard" style="display: none;">
+                <div class="resultado-header">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <h2>Resultado da Análise</h2>
+                </div>
+
+                <div class="probabilidade-display">
+                    <div class="prob-label">Probabilidade de Hospitalização</div>
+                    <div id="prob-value" class="prob-value">0%</div>
+                    <div id="prob-bar-container" class="prob-bar-container">
+                        <div id="prob-bar" class="prob-bar"></div>
+                    </div>
+                </div>
+
+                <div id="classe-container" class="classe-container">
+                    <div class="classe-label">Classificação de Risco</div>
+                    <div id="classe-badge-dashboard" class="classe-badge-large"></div>
+                </div>
+
+                <div class="interpretacao-box">
+                    <h4>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        Interpretação
+                    </h4>
+                    <p id="interpretacao-texto"></p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    document.getElementById('dashboard-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Esconder placeholder e mostrar resultado
+                document.getElementById('resultado-placeholder').style.display = 'none';
+                document.getElementById('resultado-dashboard').style.display = 'block';
+
+                // Atualizar probabilidade
+                const prob = result.probabilidade;
+                document.getElementById('prob-value').textContent = prob.toFixed(2) + '%';
+
+                // Atualizar barra de progresso
+                const probBar = document.getElementById('prob-bar');
+                probBar.style.width = prob + '%';
+                probBar.style.backgroundColor = prob >= 50 ? '#E53935' : '#43A047';
+
+                // Atualizar classe de risco
+                const classeBadge = document.getElementById('classe-badge-dashboard');
+                classeBadge.textContent = 'Risco ' + result.classe;
+                classeBadge.className = 'classe-badge-large ' + (result.classe === 'Alta' ? 'risco-alto' : 'risco-baixo');
+
+                // Atualizar interpretação
+                const interpretacao = document.getElementById('interpretacao-texto');
+                if (result.classe === 'Alta') {
+                    interpretacao.textContent = 'O paciente apresenta alta probabilidade de necessitar hospitalização. Recomenda-se monitoramento clínico rigoroso e atenção especial aos sinais de alerta.';
+                } else {
+                    interpretacao.textContent = 'O paciente apresenta baixa probabilidade de necessitar hospitalização. Manter acompanhamento ambulatorial e orientação sobre sinais de alerta.';
+                }
+            } else {
+                alert('Erro ao fazer predição: ' + result.error);
+            }
+        } catch (error) {
+            alert('Erro ao conectar com o servidor');
+            console.error('Error:', error);
+        }
+    });
+</script>
+{% endblock %}

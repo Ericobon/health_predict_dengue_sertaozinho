@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Análise do Modelo - Dengue Sertãozinho{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <h1 class="page-title">Análise do Modelo de Machine Learning</h1>
+
+    <!-- Feature Importance -->
+    <section class="chart-section">
+        <div class="section-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v12"/>
+                <path d="M6 12h12"/>
+            </svg>
+            <h2>Importância das Features</h2>
+        </div>
+        <p class="section-description">
+            Este gráfico mostra os coeficientes da regressão logística, indicando o peso que cada variável (sintoma, idade, etc.)
+            tem na predição da hospitalização. Coeficientes maiores (positivos ou negativos) indicam maior influência no resultado.
+        </p>
+        <div class="chart-container">
+            <div id="graph-importance"></div>
+        </div>
+    </section>
+
+    <!-- Curva ROC -->
+    <section class="chart-section">
+        <div class="section-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18"/>
+                <path d="M7 9l4-4 4 4 4-4"/>
+            </svg>
+            <h2>Curva ROC</h2>
+        </div>
+        <p class="section-description">
+            A curva ROC (Receiver Operating Characteristic) é uma métrica que avalia a capacidade do modelo de distinguir
+            entre as classes. A área sob a curva (AUC) de 0.96 indica um excelente poder de discriminação do modelo.
+        </p>
+        <div class="chart-container">
+            <div id="graph-roc"></div>
+        </div>
+        <div class="info-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <p>
+                <strong>Interpretação:</strong> A curva ROC demonstra que o modelo possui alta sensibilidade (capacidade de
+                detectar casos positivos) mantendo uma baixa taxa de falsos positivos. Isso é essencial em contextos de saúde
+                pública, onde identificar corretamente pacientes em risco é prioridade.
+            </p>
+        </div>
+    </section>
+
+    <!-- Insights -->
+    <section class="insights-section">
+        <div class="section-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20v-6M6 20V10M18 20V4"/>
+            </svg>
+            <h2>Principais Insights</h2>
+        </div>
+
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #E3F2FD;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <h3>Alta Acurácia</h3>
+                <p>O modelo apresenta 99.36% de acurácia, demonstrando excelente capacidade de classificação geral.</p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #E8F5E9;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#43A047" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                    </svg>
+                </div>
+                <h3>Recall Otimizado</h3>
+                <p>Com 98.54% de recall, o modelo identifica corretamente a grande maioria dos casos que necessitam hospitalização.</p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-icon" style="background: #FFF3E0;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F57C00" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+                <h3>Sintomas Chave</h3>
+                <p>Exantema, febre e mialgia são os sintomas com maior peso na predição de hospitalização.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Renderizar gráficos
+    var graphImportance = {{ graph_importance|safe }};
+    var graphRoc = {{ graph_roc|safe }};
+
+    Plotly.newPlot('graph-importance', graphImportance.data, graphImportance.layout, {responsive: true});
+    Plotly.newPlot('graph-roc', graphRoc.data, graphRoc.layout, {responsive: true});
+</script>
+{% endblock %}

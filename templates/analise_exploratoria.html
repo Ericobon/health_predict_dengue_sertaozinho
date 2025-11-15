@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Análise Exploratória - Dengue Sertãozinho{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <h1 class="page-title">Análise Exploratória de Dados (Dataset de Sertãozinho)</h1>
+
+    <!-- Distribuição Temporal -->
+    <section class="chart-section">
+        <div class="section-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18"/>
+                <path d="M18 17V9"/>
+                <path d="M13 17V5"/>
+                <path d="M8 17v-3"/>
+            </svg>
+            <h2>Distribuição Temporal dos Casos</h2>
+        </div>
+        <p class="section-description">
+            A análise temporal revela padrões sazonais importantes na incidência de dengue em Sertãozinho-SP.
+            Os dados mostram picos epidêmicos recorrentes, especialmente durante os meses mais quentes e chuvosos.
+        </p>
+        <div class="chart-container">
+            <div id="graph-ano"></div>
+        </div>
+    </section>
+
+    <!-- Distribuição por Sexo e Idade -->
+    <div class="grid-2">
+        <section class="chart-section">
+            <div class="section-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                </svg>
+                <h2>Distribuição por Sexo</h2>
+            </div>
+            <p class="section-description">
+                A análise demográfica mostra uma distribuição equilibrada entre os sexos, com
+                ligeira predominância feminina nos casos notificados.
+            </p>
+            <div class="chart-container">
+                <div id="graph-sexo"></div>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <div class="section-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/>
+                    <path d="M7 14l4-4 4 4"/>
+                </svg>
+                <h2>Distribuição por Idade</h2>
+            </div>
+            <p class="section-description">
+                A distribuição etária revela que a dengue afeta todas as faixas etárias, com
+                concentração em adultos jovens e de meia-idade.
+            </p>
+            <div class="chart-container">
+                <div id="graph-idade"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Correlação com Fenômenos Climáticos -->
+    <section class="chart-section">
+        <div class="section-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v2"/>
+                <path d="M12 20v2"/>
+                <path d="m4.93 4.93 1.41 1.41"/>
+                <path d="m17.66 17.66 1.41 1.41"/>
+                <path d="M2 12h2"/>
+                <path d="M20 12h2"/>
+                <path d="m6.34 17.66-1.41 1.41"/>
+                <path d="m19.07 4.93-1.41 1.41"/>
+            </svg>
+            <h2>Correlação com Fenômenos Climáticos</h2>
+        </div>
+        <p class="section-description">
+            A análise dos fenômenos climáticos (El Niño, La Niña, Neutro) e suas intensidades revela correlações importantes
+            com a incidência de dengue, fornecendo insights valiosos para estratégias de prevenção e controle.
+        </p>
+
+        <div class="grid-2">
+            <div class="chart-container">
+                <div id="graph-fenomeno"></div>
+            </div>
+            <div class="chart-container">
+                <div id="graph-intens"></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Renderizar gráficos
+    var graphAno = {{ graph_ano|safe }};
+    var graphSexo = {{ graph_sexo|safe }};
+    var graphIdade = {{ graph_idade|safe }};
+    var graphFenomeno = {{ graph_fenomeno|safe }};
+    var graphIntens = {{ graph_intens|safe }};
+
+    Plotly.newPlot('graph-ano', graphAno.data, graphAno.layout, {responsive: true});
+    Plotly.newPlot('graph-sexo', graphSexo.data, graphSexo.layout, {responsive: true});
+    Plotly.newPlot('graph-idade', graphIdade.data, graphIdade.layout, {responsive: true});
+    Plotly.newPlot('graph-fenomeno', graphFenomeno.data, graphFenomeno.layout, {responsive: true});
+    Plotly.newPlot('graph-intens', graphIntens.data, graphIntens.layout, {responsive: true});
+</script>
+{% endblock %}
