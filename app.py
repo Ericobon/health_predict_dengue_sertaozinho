@@ -3,7 +3,7 @@ Aplicação Flask principal para o Projeto Integrador IV - Dengue Sertãozinho
 
 - Usa `df_dengue_tratado.csv` para todas as estatísticas e análises gerais.
 - Usa `modelo_reglog_pi4_retrained.pkl` e o dataset balanceado `df_final_predict.csv` APENAS para o modelo preditivo.
-- PADRÃO OURO: Modelo treinado com apenas 7 features de input
+- BEST FEATURES: Modelo treinado com 5 features mais relevantes (FEBRE, MIALGIA, CEFALEIA, VOMITO, EXANTEMA)
 """
 
 from flask import Flask, render_template, jsonify, request
@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 # --- Variáveis Globais ---
 MODEL_PATH = "modelo_reglog_pi4_retrained.pkl"
-INPUT_FEATURES = ['CS_SEXO', 'FEBRE', 'VOMITO', 'MIALGIA', 'CEFALEIA', 'EXANTEMA']
+INPUT_FEATURES = ['FEBRE', 'MIALGIA', 'CEFALEIA', 'VOMITO', 'EXANTEMA']
 
 # --- Carregamento de Dados ---
 
@@ -40,8 +40,6 @@ try:
 except Exception as e:
     print(f"ERRO ao carregar o modelo: {e}")
     model = None
-
-# 3. Modelo já carregado acima; não há scaler (idade removida)
 
 # --- Rotas da Aplicação ---
 
@@ -254,9 +252,11 @@ def get_filtered_data():
 def predict():
     """
     Endpoint para predição do modelo de Regressão Logística.
-    Modelo: Regressão Logística com Calibração (Platt Scaling)
-    Features: 6 (CS_SEXO, FEBRE, VOMITO, MIALGIA, CEFALEIA, EXANTEMA)
-    Codificação: Label Encoding para categorias (sem IDADE)
+    
+    Modelo: Regressão Logística Calibrada (Platt Scaling)
+    Features: 5 (FEBRE, MIALGIA, CEFALEIA, VOMITO, EXANTEMA)
+    Seleção: Baseada em feature importance analysis
+    Codificação: Label Encoding (SIM=1, NÃO=0)
     """
     if model is None:
         return jsonify({"error": "Modelo não carregado"}), 500
@@ -264,28 +264,23 @@ def predict():
     try:
         data = request.json
 
-        # 1. Criar DataFrame com os dados de entrada (somente 6 features)
+        # 1. Criar DataFrame com os 5 inputs necessários
         input_data = {
-            "CS_SEXO": [data.get("sexo", "F").upper()],
             "FEBRE": [data.get("febre", "NÃO").upper()],
-            "VOMITO": [data.get("vomito", "NÃO").upper()],
             "MIALGIA": [data.get("mialgia", "NÃO").upper()],
             "CEFALEIA": [data.get("cefaleia", "NÃO").upper()],
+            "VOMITO": [data.get("vomito", "NÃO").upper()],
             "EXANTEMA": [data.get("exantema", "NÃO").upper()]
         }
 
         input_df = pd.DataFrame(input_data)
 
-        # 2. Tratar IGNORADO como NÃO para todas as features
+        # 2. Tratar IGNORADO como NÃO
         for col in INPUT_FEATURES:
             input_df[col] = input_df[col].replace('IGNORADO', 'NÃO')
 
-        # 3. Codificar variáveis categóricas
-        # CS_SEXO: F=0, M=1
-        input_df['CS_SEXO'] = (input_df['CS_SEXO'] == 'M').astype(int)
-
-        # Sintomas: NÃO=0, SIM=1
-        for col in ['FEBRE', 'VOMITO', 'MIALGIA', 'CEFALEIA', 'EXANTEMA']:
+        # 3. Label Encoding: NÃO=0, SIM=1
+        for col in INPUT_FEATURES:
             input_df[col] = (input_df[col] == 'SIM').astype(int)
 
         # 4. Garantir ordem correta das features
