@@ -252,11 +252,10 @@ def get_filtered_data():
 def predict():
     '''
     Endpoint para predição do modelo de Regressão Logística.
-    
-    Modelo: Regressão Logística Calibrada (Platt Scaling)
-    Features: 5 (FEBRE, MIALGIA, CEFALEIA, VOMITO, EXANTEMA)
-    Seleção: Baseada em feature importance analysis
-    Codificação: Label Encoding (SIM=1, NÃO=0)
+
+    Modelo: Modelo otimizado com 14 features
+    Input do usuário: 5 sintomas principais (FEBRE, MIALGIA, CEFALEIA, VOMITO, EXANTEMA)
+    Outras features: Preenchidas com valores médios/padrão
     '''
     if model is None:
         return jsonify({"error": "Modelo não carregado"}), 500
@@ -264,29 +263,39 @@ def predict():
     try:
         data = request.json
 
-        # 1. Criar DataFrame com os 5 inputs necessários
-        input_data = {
-            "FEBRE": [data.get("febre", "NÃO").upper()],
-            "MIALGIA": [data.get("mialgia", "NÃO").upper()],
-            "CEFALEIA": [data.get("cefaleia", "NÃO").upper()],
-            "VOMITO": [data.get("vomito", "NÃO").upper()],
-            "EXANTEMA": [data.get("exantema", "NÃO").upper()]
-        }
+        # Coletar os 5 sintomas do usuário
+        febre = 1 if data.get("febre", "NÃO").upper() == "SIM" else 0
+        mialgia = 1 if data.get("mialgia", "NÃO").upper() == "SIM" else 0
+        cefaleia = 1 if data.get("cefaleia", "NÃO").upper() == "SIM" else 0
+        vomito = 1 if data.get("vomito", "NÃO").upper() == "SIM" else 0
+        exantema = 1 if data.get("exantema", "NÃO").upper() == "SIM" else 0
 
-        input_df = pd.DataFrame(input_data)
+        # Criar array com as 14 features esperadas pelo modelo
+        # Ordem: DIAS_SINTOMA_NOTIFIC_TEMP, TRIMESTRE, MES, DIAS_SINTOMA_NOTIFIC, TEM_COMORBIDADE,
+        #        NU_ANO, QTD_IGNORADOS, SEVERITY_SCORE, IDADE, ANO, HEPATOPAT_BIN, COMORBIDADE_SCORE, DIABETES_BIN, RENAL_BIN
 
-        # 2. Tratar IGNORADO como NÃO
-        for col in INPUT_FEATURES:
-            input_df[col] = input_df[col].replace('IGNORADO', 'NÃO')
+        # Calcular SEVERITY_SCORE baseado nos sintomas
+        severity = exantema * 1 + vomito * 3 + mialgia * 1 + cefaleia * 1 + febre * 1
 
-        # 3. Label Encoding: NÃO=0, SIM=1
-        for col in INPUT_FEATURES:
-            input_df[col] = (input_df[col] == 'SIM').astype(int)
+        # Valores padrão/médios para as outras features
+        X_input = np.array([[
+            2,          # DIAS_SINTOMA_NOTIFIC_TEMP (média: 2 dias)
+            1,          # TRIMESTRE (1 = verão, período de maior incidência)
+            3,          # MES (março, pico de casos)
+            2,          # DIAS_SINTOMA_NOTIFIC
+            0,          # TEM_COMORBIDADE (0 = não tem)
+            2024,       # NU_ANO
+            0,          # QTD_IGNORADOS
+            severity,   # SEVERITY_SCORE (calculado baseado nos sintomas)
+            35,         # IDADE (média: 35 anos)
+            2024,       # ANO
+            0,          # HEPATOPAT_BIN (0 = não)
+            0,          # COMORBIDADE_SCORE
+            0,          # DIABETES_BIN (0 = não)
+            0           # RENAL_BIN (0 = não)
+        ]])
 
-        # 4. Garantir ordem correta das features
-        X_input = input_df[INPUT_FEATURES]
-
-        # 5. Fazer predição
+        # Fazer predição
         prediction_proba = model.predict_proba(X_input)
         prob_hospitalizacao = prediction_proba[0][1]  # Probabilidade da classe 1 (SIM)
 
