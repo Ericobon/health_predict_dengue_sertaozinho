@@ -1,9 +1,26 @@
 '''
-Aplicação Flask principal para o Projeto Integrador IV - Dengue Sertãozinho
+Dashboard Flask - Projeto Integrador IV (PI4v10) - Dengue Sertãozinho
 
-- Usa `df_dengue_tratado.csv` para todas as estatísticas e análises gerais.
-- Usa `modelo_reglog_pi4_retrained.pkl` e o dataset balanceado `df_final_predict.csv` APENAS para o modelo preditivo.
-- BEST FEATURES: Modelo treinado com 5 features mais relevantes (FEBRE, MIALGIA, CEFALEIA, VOMITO, EXANTEMA)
+📊 DADOS:
+- Dataset: df_dengue_tratado.csv (33.319 casos reais de Sertãozinho, 2000-2025)
+- Uso: Estatísticas descritivas e visualizações
+
+🤖 MODELO:
+- Arquivo: models/modelo_reglog_otimizado.pkl
+- Tipo: Regressão Logística otimizada com Optuna
+- Treinamento: 15/11/2025 13:39:45
+- Features: 14 (selecionadas via Feature Importance + Correlação + Chi²)
+- Balanceamento: SMOTE aplicado no conjunto de treino
+- Métricas (conjunto de teste):
+  * Sensitivity (Recall): 43.64%
+  * Specificity: 74.02%
+  * NPV: 98.87%
+  * AUC: 62.95%
+
+💡 FUNCIONAMENTO:
+- Usuário fornece 5 sintomas: FEBRE, MIALGIA, CEFALEIA, VOMITO, EXANTEMA
+- Sistema calcula SEVERITY_SCORE e preenche outras 9 features com valores padrão
+- Modelo faz predição com as 14 features completas
 '''
 
 from flask import Flask, render_template, jsonify, request
@@ -14,9 +31,20 @@ import os
 
 app = Flask(__name__)
 
-# --- Variáveis Globais ---
+# --- Configurações do Modelo ---
 MODEL_PATH = "models/modelo_reglog_otimizado.pkl"
-INPUT_FEATURES = ['FEBRE', 'MIALGIA', 'CEFALEIA', 'VOMITO', 'EXANTEMA']
+SCALER_PATH = "models/scaler_final.pkl"
+
+# Features esperadas pelo modelo (14 features selecionadas)
+MODEL_FEATURES = [
+    'DIAS_SINTOMA_NOTIFIC_TEMP', 'TRIMESTRE', 'MES', 'DIAS_SINTOMA_NOTIFIC',
+    'TEM_COMORBIDADE', 'NU_ANO', 'QTD_IGNORADOS', 'SEVERITY_SCORE',
+    'IDADE', 'ANO', 'HEPATOPAT_BIN', 'COMORBIDADE_SCORE',
+    'DIABETES_BIN', 'RENAL_BIN'
+]
+
+# Features coletadas do usuário (5 sintomas principais)
+USER_INPUT_FEATURES = ['FEBRE', 'MIALGIA', 'CEFALEIA', 'VOMITO', 'EXANTEMA']
 
 # --- Carregamento de Dados ---
 
