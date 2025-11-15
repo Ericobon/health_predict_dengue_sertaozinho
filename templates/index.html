@@ -1,109 +1,350 @@
-{% extends "base.html" %}
-
-{% block title %}Início - Projeto Dengue Sertãozinho{% endblock %}
-
-{% block content %}
-<!-- Hero Section -->
-<section class="hero">
-    <div class="container hero-content">
-        <div class="hero-text">
-            <h1 class="hero-title">Análise da Série Histórica das Notificações de Dengue em Sertãozinho-SP</h1>
-            <p class="hero-subtitle">
-                Estudo abrangente dos dados do SINAN DENGUE (2000-2025), com análise exploratória avançada,
-                correlações com fenômenos climáticos e desenvolvimento de modelo preditivo para hospitalização.
-            </p>
-            <div class="hero-buttons">
-                <a href="/analise_exploratoria" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 3v18h18"/>
-                        <path d="M18 17V9"/>
-                        <path d="M13 17V5"/>
-                        <path d="M8 17v-3"/>
-                    </svg>
-                    VER ANÁLISE
-                </a>
-                <a href="/teste_modelo" class="btn btn-secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 6v6l4 2"/>
-                    </svg>
-                    DASHBOARD INTERATIVO
-                </a>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Integrador IV Univesp - Análise da série histórica (2000 - 2025) das notificações no SINAN DENGUE em Sertãozinho -SP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-chart-line me-2"></i>Projeto Integrador IV - Dengue Sertãozinho</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analise">Análise Exploratória</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#modelo">Modelo Preditivo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analise-modelo">Análise do Modelo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                </ul>
             </div>
         </div>
+    </nav>
 
-        <div class="stats-card">
-            <h3 class="stats-title">Estatísticas Gerais<br>(Sertãozinho)</h3>
-            <div class="stat-item">
-                <div class="stat-icon" style="color: #1E88E5;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold text-white mb-4">
+                        Análise da Série Histórica das Notificações de Dengue em Sertãozinho-SP
+                    </h1>
+                    <p class="lead text-white-50 mb-4">
+                        Estudo abrangente dos dados do SINAN DENGUE (2000-2025) com análise exploratória avançada, 
+                        correlações com fenômenos climáticos e desenvolvimento de modelo preditivo para hospitalização.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="#analise" class="btn btn-light btn-lg">
+                            <i class="fas fa-chart-bar me-2"></i>Ver Análise
+                        </a>
+                        <a href="/dashboard" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard Interativo
+                        </a>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ total_casos }}</div>
-                    <div class="stat-label">Total de Casos</div>
+                <div class="col-lg-4">
+                    <div class="stats-card">
+                        <h3 class="text-center mb-4">Estatísticas Gerais (Sertãozinho)</h3>
+                        <div class="stat-item">
+                            <i class="fas fa-users text-primary"></i>
+                            <div>
+                                <h4 id="total-casos">-</h4>
+                                <p>Total de Casos</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-hospital text-danger"></i>
+                            <div>
+                                <h4 id="casos-hospitalizados">-</h4>
+                                <p>Casos Hospitalizados</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-calendar text-success"></i>
+                            <div>
+                                <h4 id="anos-cobertura">-</h4>
+                                <p>Período de Análise</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Análise Section -->
+    <section id="analise" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Análise Exploratória de Dados (Dataset de Sertãozinho)</h2>
+            
+            <!-- Distribuição Temporal -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-chart-line me-2"></i>Distribuição Temporal dos Casos</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>A análise temporal revela padrões sazonais importantes na incidência de dengue em Sertãozinho-SP. 
+                            Os dados mostram picos epidêmicos recorrentes, especialmente durante os meses mais quentes e chuvosos.</p>
+                            <img src="{{ url_for('static', filename='images/casos_por_ano.png') }}" class="img-fluid" alt="Casos por Ano">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="stat-item">
-                <div class="stat-icon" style="color: #E53935;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                    </svg>
+            <!-- Características Demográficas -->
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-users me-2"></i>Distribuição por Sexo</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>A análise demográfica mostra uma distribuição equilibrada entre os sexos, 
+                            com ligeira predominância feminina nos casos notificados.</p>
+                            <img src="{{ url_for('static', filename='images/sexo_distribuicao.png') }}" class="img-fluid" alt="Distribuição por Sexo">
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ hospitalizados }}</div>
-                    <div class="stat-label">Casos Hospitalizados</div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-birthday-cake me-2"></i>Distribuição por Idade</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>A distribuição etária revela que a dengue afeta todas as faixas etárias, 
+                            com concentração em adultos jovens e de meia-idade.</p>
+                            <img src="{{ url_for('static', filename='images/idade_distribuicao.png') }}" class="img-fluid" alt="Distribuição por Idade">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="stat-item">
-                <div class="stat-icon" style="color: #43A047;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ periodo }}</div>
-                    <div class="stat-label">Período de Análise</div>
+            <!-- Fenômenos Climáticos -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-cloud-rain me-2"></i>Correlação com Fenômenos Climáticos</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>A análise dos fenômenos climáticos (El Niño, La Niña, Neutro) e suas intensidades 
+                            revela correlações importantes com a incidência de dengue, fornecendo insights valiosos 
+                            para estratégias de prevenção e controle.</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <img src="{{ url_for('static', filename='images/fenomeno_climatico_distribuicao.png') }}" class="img-fluid" alt="Fenômenos Climáticos">
+                                </div>
+                                <div class="col-md-6">
+                                    <img src="{{ url_for('static', filename='images/intensidade_fenomeno_distribuicao.png') }}" class="img-fluid" alt="Intensidade dos Fenômenos">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Informações Adicionais -->
-<section class="info-section">
-    <div class="container">
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-icon">📊</div>
-                <h3>Análise Exploratória</h3>
-                <p>Visualização interativa dos dados históricos com gráficos de distribuição temporal, demográfica e climática.</p>
-                <a href="/analise_exploratoria" class="link-arrow">Explorar dados →</a>
-            </div>
+    <!-- Modelo Preditivo Section -->
+    <section id="modelo" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Modelo Preditivo de Hospitalização</h2>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-brain me-2"></i>Metodologia e Resultados</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5>Objetivo</h5>
+                            <p>Desenvolver um modelo de machine learning capaz de predizer a probabilidade de hospitalização 
+                            de pacientes com dengue com base em características demográficas, sintomas clínicos e condições climáticas.</p>
+                            
+                            <h5>Metodologia</h5>
+                            <ul>
+                                <li><strong>Algoritmo:</strong> Regressão Logística</li>
+                                <li><strong>Dataset de Treinamento:</strong> Dataset balanceado com 58.963 registros</li>
+                                <li><strong>Features Utilizadas:</strong> 5 features (Febre, Mialgia, Cefaleia, Vômito, Exantema)</li>
+                                <li><strong>Pré-processamento:</strong> One-hot encoding, normalização, balanceamento de classes</li>
+                                <li><strong>Validação:</strong> Divisão treino/teste (80/20) com estratificação e `random_state=42`</li>
+                            </ul>
+                            
+                            <h5>Resultados do Modelo (Regressão Logística)</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="metric-card">
+                                        <h6>ROC AUC</h6>
+                                        <span class="metric-value">99.30%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="metric-card">
+                                        <h6>Recall (Hospitalizado)</h6>
+                                        <span class="metric-value">98.54%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="metric-card">
+                                        <h6>Acurácia</h6>
+                                        <span class="metric-value">99.36%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="metric-card">
+                                        <h6>Precisão (Hospitalizado)</h6>
+                                        <span class="metric-value">100.00%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Observação sobre o Balanceamento:</strong> O dataset de treinamento foi balanceado para resolver o desbalanceamento extremo dos dados reais (1.17% de hospitalização). O balanceamento foi realizado com casos reais de hospitalização do ano 2025, escolhidos aleatoriamente, sendo metade homem e metade mulher, garantindo que o modelo aprenda a identificar corretamente a classe minoritária. O modelo foi otimizado para maximizar o **Recall**, o que é crucial em um contexto de saúde pública.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-calculator me-2"></i>Teste o Modelo</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="prediction-form">
 
-            <div class="info-card">
-                <div class="info-icon">🤖</div>
-                <h3>Modelo Preditivo</h3>
-                <p>Modelo de Machine Learning com 99.3% de acurácia para predizer risco de hospitalização por dengue.</p>
-                <a href="/modelo_preditivo" class="link-arrow">Ver detalhes →</a>
-            </div>
-
-            <div class="info-card">
-                <div class="info-icon">⚡</div>
-                <h3>Dashboard Interativo</h3>
-                <p>Teste o modelo em tempo real e visualize predições baseadas em sintomas clínicos.</p>
-                <a href="/teste_modelo" class="link-arrow">Testar modelo →</a>
+                                <div class="mb-3">
+                                    <label class="form-label">Febre</label>
+                                    <select class="form-select" id="febre">
+                                        <option value="SIM">Sim</option>
+                                        <option value="NAO">Não</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Vômito</label>
+                                    <select class="form-select" id="vomito">
+                                        <option value="NAO">Não</option>
+                                        <option value="SIM">Sim</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mialgia (Dor Muscular)</label>
+                                    <select class="form-select" id="mialgia">
+                                        <option value="SIM">Sim</option>
+                                        <option value="NAO">Não</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Cefaleia (Dor de Cabeça)</label>
+                                    <select class="form-select" id="cefaleia">
+                                        <option value="SIM">Sim</option>
+                                        <option value="NAO">Não</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Exantema (Manchas na Pele)</label>
+                                    <select class="form-select" id="exantema">
+                                        <option value="NAO">Não</option>
+                                        <option value="SIM">Sim</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-magic me-2"></i>Calcular Probabilidade
+                                </button>
+                            </form>
+                            
+                            <div id="prediction-result" class="mt-3" style="display: none;">
+                                <div class="alert alert-success">
+                                    <h6>Probabilidade de Hospitalização:</h6>
+                                    <span id="probability-value" class="h4"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
-{% endblock %}
+    </section>
+
+    <!-- Análise do Modelo Section -->
+    <section id="analise-modelo" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Análise Aprofundada do Modelo de Regressão Logística</h2>
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header"><h4><i class="fas fa-th me-2"></i>Matriz de Confusão</h4></div>
+                        <div class="card-body">
+                            <p>A matriz de confusão mostra o desempenho do modelo na classificação de pacientes hospitalizados e não hospitalizados no dataset de teste balanceado. Ela detalha os acertos e erros, permitindo uma avaliação visual da performance.</p>
+                            <img src="{{ url_for('static', filename='images/confusion_matrix.png') }}" class="img-fluid" alt="Matriz de Confusão">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header"><h4><i class="fas fa-star me-2"></i>Importância das Features</h4></div>
+                        <div class="card-body">
+                            <p>Este gráfico mostra os coeficientes da regressão logística, indicando o peso que cada variável (sintoma, idade, etc.) tem na predição da hospitalização. Coeficientes maiores (positivos ou negativos) indicam maior influência no resultado.</p>
+                            <img src="{{ url_for('static', filename='images/feature_importance.png') }}" class="img-fluid" alt="Importância das Features">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header"><h4><i class="fas fa-chart-area me-2"></i>Curva ROC</h4></div>
+                        <div class="card-body">
+                            <p>A curva ROC (Receiver Operating Characteristic) é uma métrica que avalia a capacidade do modelo de distinguir entre as classes. A área sob a curva (AUC) de 0.96 indica um excelente poder de discriminação do modelo.</p>
+                            <img src="{{ url_for('static', filename='images/roc_curve.png') }}" class="img-fluid" alt="Curva ROC">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Projeto Integrador IV - UNIVESP</h5>
+                    <p>Análise da série histórica das notificações no SINAN DENGUE em Sertãozinho-SP</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>Desenvolvido com <i class="fas fa-heart text-danger"></i> para fins acadêmicos</p>
+                    <p><small>© 2025 - Todos os direitos reservados</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
